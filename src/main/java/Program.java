@@ -51,22 +51,27 @@ public class Program {
         final String[] usernameValue = username.getAttribute("data-value").split(" ", 2); // "Denis Kuliev" -> [ "Denis", "Kuliev ]
         final String generatedUserName = usernameValue[1] + new Random().nextInt(1000);
         final int userNameLengthLimit = 16;
+        final int userPasswordLimit = 20;
 
         user.preparedUserName = limitString(generatedUserName,userNameLengthLimit);
 
         user.firstName = usernameValue[0];
         user.lastName = usernameValue[1];
-        user.password = limitString(UUID.randomUUID().toString(),userNameLengthLimit);
+        user.password = limitString(UUID.randomUUID().toString(),userPasswordLimit);
         return user;
     }
 
     //string int => string
     private static  String limitString (String s, int max){
-        return s
-               .codePoints()
-               .limit(max)
-               .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-               .toString();
+        if(s.length() <= max){
+            return s;
+        }
+        return s.substring(0, max);
+        //        return s
+//               .codePoints()
+//               .limit(max)
+//               .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+//               .toString();
     }
 
     private static void writeResultToFile(String result) {
