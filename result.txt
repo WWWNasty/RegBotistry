@@ -1,3 +1,3 @@
- логин: Alexander341
- пароль: 1e72ab4e-1161-40
- E-mail: miguel.alexander@example.com
+ логин: Patterson939
+ пароль: a5d2d49d-fc93-4b
+ E-mail: michelle.patterson@example.com

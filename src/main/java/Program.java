@@ -1,60 +1,65 @@
 import com.codeborne.selenide.SelenideElement;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 import static com.codeborne.selenide.Selenide.*;
 
 public class Program {
     public static void main(String[] args) throws InterruptedException {
+        User user = getUser();
+
+        registerUser(user);
+
+        writeResult(user);
+
+    }
+
+    private static void writeResult(User user) {
+        String result = String.format(" логин: %s\n пароль: %s\n E-mail: %s", user.preparedUserName, user.password, user.emailValue);
+        writeResultToFile(result);
+    }
+
+    private static void registerUser(User user) throws InterruptedException {
+        open("https://line6.com/account/create.html");
+        Thread.sleep(1000);
+        $("#l_email").setValue(user.emailValue);
+        $("#l_user").setValue(user.preparedUserName);
+        $("#l_first").setValue(user.firstName);
+        $("#l_last").setValue(user.lastName);
+        $("#l_pass").sendKeys(user.password);
+        Thread.sleep(1000);
+        $("#l_pass_repeat").setValue(user.password);
+        Thread.sleep(1000);
+
+        $("form input[type = 'submit']").click();
+        $("#user_data_complete").shouldBe();
+    }
+
+    private static User getUser() {
         open("https://randomuser.me");
-        //
+        User user = new User();
         final int emailElementIndex = 1;
         final SelenideElement email = $$("ul#values_list > li").get(emailElementIndex);
-        final String emailValue = email.getAttribute("data-value");
+
+        user.emailValue = email.getAttribute("data-value");
 
         final int usernameElementIndex = 0;
         final SelenideElement username = $$("ul#values_list > li").get(usernameElementIndex);
         final String[] usernameValue = username.getAttribute("data-value").split(" ", 2); // "Denis Kuliev" -> [ "Denis", "Kuliev ]
         final String generatedUserName = usernameValue[1] + new Random().nextInt(1000);
-
         final int userNameLengthLimit = 16;
 
-        final String preparedUserName = limitString(generatedUserName,userNameLengthLimit);
+        user.preparedUserName = limitString(generatedUserName,userNameLengthLimit);
 
-        final String firstName = usernameValue[0];
-        final String lastName = usernameValue[1];
-        String password = limitString(UUID.randomUUID().toString(),userNameLengthLimit);
-
-        open("https://line6.com/account/create.html");
-        Thread.sleep(1000);
-        $("#l_email").setValue(emailValue);
-        $("#l_user").setValue(preparedUserName);
-        $("#l_first").setValue(firstName);
-        $("#l_last").setValue(lastName);
-        $("#l_pass").sendKeys(password);
-        Thread.sleep(1000);
-        $("#l_pass_repeat").setValue(password);
-        Thread.sleep(1000);
-
-
-        System.out.println(emailValue);
-        System.out.println(preparedUserName);
-        $("form input[type = 'submit']").click();
-        $("#user_data_complete").shouldBe();
-
-        String result = String.format(" логин: %s\n пароль: %s\n E-mail: %s", preparedUserName, password, emailValue);
-
-        writeResultToFile(result);
-
-
-
+        user.firstName = usernameValue[0];
+        user.lastName = usernameValue[1];
+        user.password = limitString(UUID.randomUUID().toString(),userNameLengthLimit);
+        return user;
     }
+
     //string int => string
     private static  String limitString (String s, int max){
         return s
