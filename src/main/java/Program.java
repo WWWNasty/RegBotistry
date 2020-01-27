@@ -24,14 +24,17 @@ public class Program {
 
     private static void registerUser(User user) throws InterruptedException {
         open("https://line6.com/account/create.html");
+        //и тут слип не нужен
         Thread.sleep(1000);
         $("#l_email").setValue(user.emailValue);
         $("#l_user").setValue(user.preparedUserName);
         $("#l_first").setValue(user.firstName);
         $("#l_last").setValue(user.lastName);
         $("#l_pass").sendKeys(user.password);
+        //Лучше не жди, а проверь что появилась надпись Password ok!
         Thread.sleep(1000);
         $("#l_pass_repeat").setValue(user.password);
+        //Тоже самое
         Thread.sleep(1000);
 
         $("form input[type = 'submit']").click();
@@ -39,25 +42,27 @@ public class Program {
     }
 
     private static User getUser() {
-        open("https://randomuser.me");
-        User user = new User();
         final int emailElementIndex = 1;
-        final SelenideElement email = $$("ul#values_list > li").get(emailElementIndex);
-
-        user.emailValue = email.getAttribute("data-value");
-
-        final int usernameElementIndex = 0;
-        final SelenideElement username = $$("ul#values_list > li").get(usernameElementIndex);
-        final String[] usernameValue = username.getAttribute("data-value").split(" ", 2); // "Denis Kuliev" -> [ "Denis", "Kuliev ]
-        final String generatedUserName = usernameValue[1] + new Random().nextInt(1000);
         final int userNameLengthLimit = 16;
         final int userPasswordLimit = 20;
+        final int usernameElementIndex = 0;
+
+        open("https://randomuser.me");
+
+        final SelenideElement email = $$("ul#values_list > li").get(emailElementIndex);
+        final SelenideElement username = $$("ul#values_list > li").get(usernameElementIndex);
+
+        final String[] usernameValue = username.getAttribute("data-value").split(" ", 2); // "Denis Kuliev" -> [ "Denis", "Kuliev ]
+        final String generatedUserName = usernameValue[1] + new Random().nextInt(1000);
+
+        User user = new User();
 
         user.preparedUserName = limitString(generatedUserName,userNameLengthLimit);
-
+        user.emailValue = email.getAttribute("data-value");
         user.firstName = usernameValue[0];
         user.lastName = usernameValue[1];
         user.password = limitString(UUID.randomUUID().toString(),userPasswordLimit);
+
         return user;
     }
 
@@ -67,11 +72,6 @@ public class Program {
             return s;
         }
         return s.substring(0, max);
-        //        return s
-//               .codePoints()
-//               .limit(max)
-//               .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-//               .toString();
     }
 
     private static void writeResultToFile(String result) {
